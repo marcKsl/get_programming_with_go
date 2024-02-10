@@ -2,24 +2,20 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 )
 
 func main() {
+	var num = rand.Intn(10) + 1
+	fmt.Println(num)
 
-	// 2.4.1
+	num = rand.Intn(10) + 1
+	fmt.Println(num)
 
-	var a, b = 10, 20
+	// Q1
+	// The distance between Earth and Mars varies from nearby to opposite sides of the sun.
+	// Write a program that generates a random distance from 56,000,000 to 401,000,000 km.
+	var variableDistance = rand.Intn(401000001-56000000) + 56000000
+	fmt.Println(variableDistance)
 
-	// 2.4.2
-
-	b += 1
-	a /= 5
-	b += a
-	a++
-	a--
-	fmt.Println(a, b)
-
-	var weight = 90
-	weight -= 2
-	fmt.Println("Shortest way to substract 2 from a variable -> 90 -= 2 ->", weight)
 }
