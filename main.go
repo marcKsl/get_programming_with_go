@@ -12,16 +12,27 @@ import (
 // package, import, func, var, if, else, switch, case, default, fallthrough, for, break
 
 func main() {
-	var count = 10
+	const myGuess = 89
+	var counter = 0
 
-	for count > 0 {
-		if rand.Intn(4) == 0 {
-			fmt.Println("Something did an oopsie daisy")
+	for {
+		time.Sleep(30 * time.Millisecond)
+		var cpuGuess = rand.Intn(100) + 1
+		if (cpuGuess) == myGuess {
+			fmt.Println(myGuess, "is correct!")
 			break
+		} else if cpuGuess <= myGuess {
+			fmt.Println(cpuGuess, "- Nope, your guess is lower than my guess.")
+			counter++
+		} else {
+			fmt.Println(cpuGuess, "- Nope, your guess is higher than my guess.")
+			counter++
 		}
-		fmt.Println(count)
-		time.Sleep(300 * time.Millisecond)
-		count--
+	}
+
+	fmt.Println("It took you:", counter, "tries to get the right number.")
+	if counter < 10 {
+		fmt.Println("That was impressive.")
 	}
 
 }
