@@ -1,16 +1,9 @@
 package main
 
+import "fmt"
+
 func main() {
-	// simple if, else if, else statement
+	const year = 2400
+	fmt.Println((year%4 == 0 && year%100 != 0) || year%400 == 0)
 
-	var condition = true
-	var secondCondition = false
-
-	if condition {
-		// do something
-	} else if secondCondition {
-		// do something
-	} else {
-		// do something
-	}
 }
