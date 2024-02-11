@@ -2,39 +2,26 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
+// In Go ONLY Booleans can be used to evaluate a condition
+// Go provides branching and repetition with if, switch and for
+// So far we have used the following 25 Go keywords:
+// package, import, func, var, if, else, switch, case, default, fallthrough, for, break
+
 func main() {
+	var count = 10
 
-	// Two ways to implement switch cases, also note the use of fallthrough and default
-
-	// Way number one switch over a variable:
-
-	const floor = 2
-
-	switch floor {
-	case 1:
-		fmt.Println("This is the first floor.")
-	case 2:
-		fmt.Println("This is the ground floor.")
-		fallthrough
-	case 3:
-		fmt.Println("This is the basement and the ceiling seems kinda bad")
-	default:
-		fmt.Println("Still outside!")
+	for count > 0 {
+		if rand.Intn(4) == 0 {
+			fmt.Println("Something did an oopsie daisy")
+			break
+		}
+		fmt.Println(count)
+		time.Sleep(300 * time.Millisecond)
+		count--
 	}
 
-	const parallelDimensionFloor = 1
-
-	switch parallelDimensionFloor {
-	case 1:
-		fmt.Println("This is the first floor.")
-	case 2:
-		fmt.Println("This is the ground floor.")
-		fallthrough
-	case 3:
-		fmt.Println("This is the basement and the ceiling seems kinda bad")
-	default:
-		fmt.Println("Still outside?")
-	}
 }
