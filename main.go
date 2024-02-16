@@ -3,26 +3,28 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
-func getRandomCoin() float64 {
+func getCoinValue() int {
+
 	switch i := rand.Intn(3); i {
 	case 0:
-		return 0.05
+		return 5
 	case 1:
-		return 0.10
+		return 10
 	default:
-		return 0.25
+		return 25
 	}
 }
 
 func main() {
-
-	piggyBank := 0.0
-
-	for i := 0; piggyBank <= 20; i++ {
-		piggyBank += getRandomCoin()
-	}
-
+	var piggyBank int = 0
+	var goal int = 2000
 	fmt.Println(piggyBank)
+	for piggyBank <= goal {
+		piggyBank += getCoinValue()
+		time.Sleep(40 * time.Millisecond)
+		fmt.Printf("%.2f$\n", (float64(piggyBank) / 100))
+	}
 }
