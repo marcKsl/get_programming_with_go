@@ -1,30 +1,10 @@
 package main
 
-import (
-	"fmt"
-	"math/rand"
-	"time"
-)
-
-func getCoinValue() int {
-
-	switch i := rand.Intn(3); i {
-	case 0:
-		return 5
-	case 1:
-		return 10
-	default:
-		return 25
-	}
-}
+import "fmt"
 
 func main() {
-	var piggyBank int = 0
-	var goal int = 2000
-	fmt.Println(piggyBank)
-	for piggyBank <= goal {
-		piggyBank += getCoinValue()
-		time.Sleep(40 * time.Millisecond)
-		fmt.Printf("%.2f$\n", (float64(piggyBank) / 100))
-	}
+	const lightYearInKilometers = 9.461e+12
+	const distanceInKilometers = 236000000000000000
+	const distanceInLightYears = distanceInKilometers / lightYearInKilometers
+	fmt.Printf("The Canis Major Dwarf Galaxy is %.2f lightyeas aways from us.", distanceInLightYears)
 }
