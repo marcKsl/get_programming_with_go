@@ -1,34 +1,44 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	fmt.Println("------------------------------------------------------------------")
-	fmt.Println("Exercise no 1: caesar.go")
-	fmt.Println("------------------------------------------------------------------")
-	m := "L fdph, L vdz, L frqtxhuhg."
-	for i := 0; i < len(m); i++ {
-		var b byte
-		// Check if generally in range of the alphabet, lower and uppercase.
-		if (m[i] >= 'a' && m[i] <= 'z') || (m[i] >= 'A' && m[i] <= 'Z') {
-			if m[i] < 'A' {
-				// Handle uppercase
-				b = m[i] - 3
-				if m[i] < 'a' {
-					b += 26
-				}
-			} else {
-				// Handle lowercase
-				b = m[i] - 3
-				if m[i] < 'A' {
-					b += 26
-				}
+
+	// Use ROT13 to cipher a message that contains unicode characters, and thus runes(int32)
+
+	message := "Hola Estación Espacial Internacional"
+	fmt.Println("")
+	fmt.Println("")
+	for _, r := range message {
+		c := r
+		if c >= 'a' && c <= 'z' { // Lowercase
+			c = c + 13
+			if c > 'z' {
+				c = c - 26
 			}
-			// Print deciphered values
-			fmt.Printf("%c", b)
-		} else {
-			// Print non alphabetic values as they are
-			fmt.Printf("%c", m[i])
+		} else if c >= 'A' && c <= 'Z' { // Uppercase
+			c = c + 13
+			if c > 'Z' {
+				c = c - 26
+			}
 		}
+		fmt.Printf("%c", c)
 	}
+
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Print("Translating")
+	for i := 0; i < 10; i++ {
+		fmt.Print(".")
+		time.Sleep(150 * time.Millisecond)
+	}
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("=> Hola Estación Espacial Internacional")
+	fmt.Println("")
+	fmt.Println("")
+
 }
