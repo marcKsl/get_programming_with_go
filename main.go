@@ -5,64 +5,38 @@ import (
 )
 
 func main() {
+	cipherText := "CSOITEUIWUIZNSROCNKFD"
+	keyword := "GOLANG"
 
-	fmt.Println("-------------------------------------------------------------------")
-	fmt.Println("---------------------Converting Boolean values---------------------")
-	fmt.Println("-------------------------------------------------------------------")
+	// The strings.Repeat function may come in handy.
+	// Give it a try, but also complete this exercise without
+	// importing any packages other than fmt to print the deciphered message.
+	// Try this exercise using range in a loop and again without it.
+	// Remember that the range keyword splits a string into runes,
+	// whereas an index like keyword[0] results in a byte.
+	// Tip You can only perform operations on values of the same type,
+	// but you can convert one type to the other (string, byte, rune).
+	// To wrap around at the edges of the alphabet,
+	// the Caesar cipher exercise made use of a comparison.
+	// Solve this exercise without any if statements by using modulus (%).
 
-	// Boolean values get converted to their respective text values in strings when printed
-	launch := false
-	launchText := fmt.Sprintf("%v", launch)
-	fmt.Println("Ready for launch:", launchText)
+	// for loop through len(cipherText)
 
-	// To convert them into numbers or other text values, a simple if statement does the trick
-	var yesNo string
-	if launch {
-		yesNo = "yes"
-	} else {
-		yesNo = "no"
-	}
-	fmt.Println("Ready for launch:", yesNo)
+	extendedKeyword := ""
+	repeatCount := len(cipherText) / len(keyword)
 
-	// Backwards conversion is more simple, because you can assign the result of a condition
-	// directly to a variable.
-	// This will print true.
-	var myString string = "Yumyum"
-	myBooly := (myString == "Yumyum")
-	fmt.Println(myBooly)
-
-	// Booleans in go don't have a numeric equivalent,
-	// unlike in other languages like C where 0 and 1 are also used.
-
-	// Question: How would you convert a Boolean to an Integer,
-	// with 1 for true and 0 for false?
-
-	iWantToBeAnIntegerBool := true
-	var iAmNowAnIntegerNotABoolAnyMore int
-	if iWantToBeAnIntegerBool {
-		iAmNowAnIntegerNotABoolAnyMore = 1
-	} else {
-		iAmNowAnIntegerNotABoolAnyMore = 0
-	}
-	fmt.Printf("%v", iAmNowAnIntegerNotABoolAnyMore)
-
-	// Experiment input.go
-
-	fmt.Println("")
-	fmt.Println("-------------------------------------------------------------------")
-	fmt.Println("------------------------Experiment input.go------------------------")
-	fmt.Println("-------------------------------------------------------------------")
-
-	input := "true"
-	var output bool
-	if input == "1" || input == "yes" || input == "true" {
-		output = true
-		fmt.Println(output)
-	} else if input == "0" || input == "no" || input == "false" {
-		output = false
-		fmt.Println(output)
-	} else {
-		fmt.Println("Invalid input.")
+	for i := 0; i < repeatCount+1; i++ {
+		extendedKeyword += keyword
 	}
 
+	// There is a solution that GPT suggested that involves slices
+	// We didn't use slices yet,
+	// so i stick with just adding 1 to repeatCount for simplicity
+
+	var output string
+	for i := 0; i < len(cipherText); i++ {
+		shift := (cipherText[i] - extendedKeyword[i] + 26) % 26
+		output += string('A' + shift)
+	}
+	fmt.Println(output)
 }
