@@ -1,39 +1,51 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type celsius float64
+type fahrenheit float64
 type kelvin float64
 
-// Typical function declaration
-func celsiusToKelvin(c celsius) kelvin {
-	return kelvin(c + 273.15)
+func (c celsius) fahrenheit() fahrenheit {
+	return fahrenheit(c*5/9 + 32)
 }
 
-// Typical method declaration
-// Note: Methods can, like functions, accept multiple parameters, but must have exactly one receiver
-// The receiver is the variable the method gets called on.
-// It needs to be of the type, specified in the receiver part of the method.
-// The body is the same.
-// Unlike in functions, in methods both the receiver and parameters stand in front of the method name.
 func (c celsius) kelvin() kelvin {
 	return kelvin(c + 273.15)
 }
 
+func (f fahrenheit) celsius() celsius {
+	return celsius((f - 32) * 9 / 5)
+}
+
+func (f fahrenheit) kelvin() kelvin {
+	return f.celsius().kelvin()
+}
+
+func (k kelvin) celsius() celsius {
+	return celsius(k - 273.15)
+}
+
+func (k kelvin) fahrenheit() fahrenheit {
+	return k.celsius().fahrenheit()
+}
+
 func main() {
 
-	var c celsius = 127 // sunlit moon surface temperature
-	var k kelvin
+	var c celsius = 20
+	var f fahrenheit = 43.11
+	var k kelvin = 293.43
 
-	// Typical function call
-	k = celsiusToKelvin(c)
-	fmt.Printf("%v\n", k)
-	c = 20 // room temperature on earth
-	// Typical method call.
-	// Methods are called with the dot notation on variables of the correct type,
-	// followed by the method name and any arguments.
-	k = c.kelvin()
-	fmt.Printf("%v\n", k)
+	fmt.Println(c)
+	fmt.Println(c.fahrenheit())
+	fmt.Println(c.kelvin())
+	fmt.Println("----------------------------------------")
+	fmt.Println(f)
+	fmt.Println(f.celsius())
+	fmt.Println(f.kelvin())
+	fmt.Println("----------------------------------------")
+	fmt.Println(k)
+	fmt.Println(k.celsius())
+	fmt.Println(k.fahrenheit())
+	fmt.Println("----------------------------------------")
 }
