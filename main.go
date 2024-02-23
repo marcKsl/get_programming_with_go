@@ -1,51 +1,37 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
-type celsius float64
-type fahrenheit float64
 type kelvin float64
 
-func (c celsius) fahrenheit() fahrenheit {
-	return fahrenheit(c*5/9 + 32)
+func fakeSensor() kelvin {
+	return kelvin(rand.Intn(151) + 150)
 }
 
-func (c celsius) kelvin() kelvin {
-	return kelvin(c + 273.15)
-}
-
-func (f fahrenheit) celsius() celsius {
-	return celsius((f - 32) * 9 / 5)
-}
-
-func (f fahrenheit) kelvin() kelvin {
-	return f.celsius().kelvin()
-}
-
-func (k kelvin) celsius() celsius {
-	return celsius(k - 273.15)
-}
-
-func (k kelvin) fahrenheit() fahrenheit {
-	return k.celsius().fahrenheit()
+func realSensor() kelvin {
+	return 0
 }
 
 func main() {
+	fmt.Println("Hello World")
+	// Functions in go a first-class, they work everywhere where integers, strings, and other types work.
+	// Functions can be assigned to variables.
+	// Note: The function itself and not its return is assigned to the variable.
+	// The sensor variable is now of type "function", that accepts no parameters and has a return type of kelvin.
+	// Note: The last part is relevant, you can not assign different function types after that to the same variable.
+	// If we would not rely on type inference, we need to write the declaration like this:
+	// var sensor func() kelvin
+	sensor := fakeSensor
+	fmt.Println(sensor())
+	// This way we have isloated the actual sensor and can switch it without affecting the code at all.
+	// Pretty, pretty neat, i must say.
+	// Note: As mentioned above, we can not assign a function that accepts also no parameters but returns the type celsius for example.
+	sensor = realSensor
+	fmt.Println(sensor())
+	// Functions can be passed to other functions as arguments.
+	// You can write functions that create other functions.
 
-	var c celsius = 20
-	var f fahrenheit = 43.11
-	var k kelvin = 293.43
-
-	fmt.Println(c)
-	fmt.Println(c.fahrenheit())
-	fmt.Println(c.kelvin())
-	fmt.Println("----------------------------------------")
-	fmt.Println(f)
-	fmt.Println(f.celsius())
-	fmt.Println(f.kelvin())
-	fmt.Println("----------------------------------------")
-	fmt.Println(k)
-	fmt.Println(k.celsius())
-	fmt.Println(k.fahrenheit())
-	fmt.Println("----------------------------------------")
 }
