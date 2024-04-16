@@ -1,143 +1,175 @@
-// Lesson 18
-
 package main
 
 import (
 	"fmt"
+	"math"
+	"strings"
 )
-
-func dump(label string, slice []string) {
-	fmt.Printf("%v: length %v, capacity %v %v\n", label, len(slice), cap(slice), slice)
-}
 
 func main() {
 
-	// The append function
-
 	fmt.Println("-------------------------------------------------------")
-	fmt.Println("-------------------The append function-----------------")
+	fmt.Println("-------------------Declaring a map---------------------")
 	fmt.Println("-------------------------------------------------------")
 
-	dwarfs := []string{"Ceres", "Pluto", "Haumea", "Makemake", "Eris"}
-	fmt.Println(len(dwarfs))
-	dwarfs = append(dwarfs, "Orcus")
-	fmt.Println(dwarfs)
-	fmt.Println(len(dwarfs))
-
-	// Length and capacity
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("-------------------Length and capacity-----------------")
-	fmt.Println("-------------------------------------------------------")
-
-	dwarfs = []string{"Ceres", "Pluto", "Haumea", "Makemake", "Eris"}
-	dump("dwarfs", dwarfs)
-	fmt.Println("")
-	dump("dwarfs[1:2]", dwarfs[1:2])
-
-	// Investigating the append function
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------Investigating the append function----------")
-	fmt.Println("-------------------------------------------------------")
-
-	dwarfs = []string{"Ceres", "Pluto", "Haumea", "Makemake", "Eris"}
-	dwarfs2 := append(dwarfs, "Orcus")
-	dwarfs3 := append(dwarfs, "Salacia", "Quaoar", "Sedna")
-	dump("dwarfs", dwarfs)
-	dump("dwarfs", dwarfs2)
-	dump("dwarfs", dwarfs3)
-
-	// All three slices point to different underlying arrays
-	dwarfs3[0] = "Pluto"
-	dump("dwarfs", dwarfs)
-	dump("dwarfs", dwarfs2)
-	dump("dwarfs", dwarfs3)
-
-	// Three index slicing
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------------Three index slicing------------------")
-	fmt.Println("-------------------------------------------------------")
-
-	// a(x:y:z)
-	// a is the source slice
-	// x is the starting index
-	// y is the length or last index
-	// z is the capacity
-
-	// mySlice(1:3:5)
-	// 1 is the start
-	// length is 3-1=2
-	// capacity is 5-1=4
-	// so it takes the second and third element of the slice and has two more empty slots available
-
-	planets := []string{
-		"Mercury", "Venus", "Earth", "Mars",
-		"Jupiter", "Saturn", "Uranus", "Neptune",
+	temperature := map[string]int{
+		"Earth": 15,
+		"Mars":  -65,
 	}
 
-	terrestrial := planets[0:4:4]
-	worlds := append(terrestrial, "Ceres")
+	temp := temperature["Earth"]
+	fmt.Printf("On average the Earth is %v C°.\n", temp)
 
-	fmt.Println(planets)
-	fmt.Println(terrestrial)
-	fmt.Println(worlds)
+	temperature["Earth"] = 16
+	temperature["Venus"] = 464
 
-	terrestrial = planets[0:4]
-	worlds = append(terrestrial, "Ceres")
-	fmt.Println(terrestrial)
-	fmt.Println(worlds)
+	fmt.Println(temperature)
 
-	// Preallocate slices with make
+	// If you try to access a not existing key in a map, it returns the zero value for this type
+	// Which, in this case, is 0, because we chose int as the type for our values
 
-	fmt.Println("------------------------------------------------------")
-	fmt.Println("-------------Preallocate slices with make-------------")
-	fmt.Println("------------------------------------------------------")
+	fmt.Println(temperature["Moon"])
 
-	dwarfs = make([]string, 0, 10)
-	dwarfs = append(dwarfs, "Ceres", "Pluto", "Haumea", "Makemake", "Eris")
-	fmt.Println(dwarfs)
+	// Go provides a comma, ok syntax for maps:
+	// moon and ok are just example names, they can be anything
 
-	// Declaring variadic functions
+	if moon, ok := temperature["Moon"]; ok {
+		fmt.Printf("On average the moon is %v C°.\n", moon)
+	} else {
+		fmt.Println("Where is the moon?")
+	}
 
-	fmt.Println("------------------------------------------------------")
-	fmt.Println("-------------Declaring variadic functions-------------")
-	fmt.Println("------------------------------------------------------")
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("-------------------Maps aren't copied------------------")
+	fmt.Println("-------------------------------------------------------")
 
-	var terraform = func(prefix string, worlds ...string) []string {
-		newWorlds := make([]string, len(worlds))
+	planets := map[string]string{
+		"Earth": "Sector ZZ9",
+		"Mars":  "Sector ZZ9",
+	}
 
-		for i := range worlds {
-			newWorlds[i] = prefix + " " + worlds[i]
+	fmt.Println(planets["Earth"])
+
+	planetsMarkII := planets
+	planets["Earth"] = "whoops"
+
+	fmt.Println(planets["Earth"])
+	fmt.Println(planetsMarkII["Earth"])
+
+	delete(planets, "Earth")
+	fmt.Println(planetsMarkII)
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("-----------Preallocating maps with make----------------")
+	fmt.Println("-------------------------------------------------------")
+
+	temperatures := make(map[float64]int, 8)
+	fmt.Println(temperatures)
+	temperatures[4.0] = 77
+	fmt.Println(temperatures)
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("------------Using maps to count things-----------------")
+	fmt.Println("-------------------------------------------------------")
+
+	temperaturez := []float64{
+		-28.0, 32.0, -31.0, -29.0, -23.0, -29.0, -28.0, -33.0,
+	}
+
+	frequency := make(map[float64]int)
+
+	for _, t := range temperaturez {
+		frequency[t]++
+	}
+
+	for t, num := range frequency {
+		fmt.Printf("%+.3f occurs %d times\n", t, num)
+	}
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("----------Grouping data with maps and slices-----------")
+	fmt.Println("-------------------------------------------------------")
+
+	temperatures2 := []float64{
+		-28.0, 32.0, -31.0, -29.0, -23.0, -29.0, -28.0, -33.0,
+	}
+
+	groups := make(map[float64][]float64)
+
+	for _, t := range temperatures2 {
+		g := math.Trunc(t/10) * 10
+		groups[g] = append(groups[g], t)
+	}
+
+	for g, temperatures := range groups {
+		fmt.Printf("%+.0f: %v\n", g, temperatures)
+	}
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("-------------Repurposing maps as sets------------------")
+	fmt.Println("-------------------------------------------------------")
+
+	var temperatures3 = []float64{
+		-28.0, 32.0, -31.0, -29.0, -23.0, -29.0, -28.0, -33.0,
+	}
+
+	// This for loop ensures that every member in the set is unique, because thats what sets are,
+	// unique collections of things
+
+	set := make(map[float64]bool)
+	for _, t := range temperatures3 {
+		set[t] = true
+	}
+
+	if set[-28.0] {
+		fmt.Println("set member")
+	}
+
+	if set[33.0] {
+		fmt.Println("set member")
+	} else {
+		fmt.Println("Not there.")
+	}
+
+	fmt.Println(set)
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("----------------experiment words.go--------------------")
+	fmt.Println("-------------------------------------------------------")
+
+	// Question:
+
+	// 	Write a function to count the frequency of words in a string of text and return a map of words with their counts. The function should convert the text to lowercase, and punctuation should be trimmed from words. The strings package contains several helpful functions for this task, including Fields, ToLower, and Trim.
+	// Use your function to count the frequency of words in the following passage and then display the count for any word that occurs more than once.
+
+	// Solution:
+
+	// in: string
+	// out: map[word string]count int
+
+	// strings.Fields() can be used to get the string slice array
+
+	var countFrequency = func(s string) map[string]int {
+		inputBuffer := strings.Fields(s)
+		wordSlices := make([]string, len(inputBuffer))
+		for i := range inputBuffer {
+			wordSlices[i] = strings.ToLower(strings.Trim(inputBuffer[i], " "))
 		}
-		return newWorlds
-	}
+		buffer := make(map[string]int, 100)
+		result := make(map[string]int, 100)
+		for _, word := range wordSlices {
+			buffer[word] = buffer[word] + 1
+		}
 
-	planets = []string{"Venus", "Mars", "Jupiter"}
-	newPlanets := terraform("New", planets...)
-	fmt.Println(newPlanets)
-
-	// capacity.go
-
-	fmt.Println("-------------------------------------------------")
-	fmt.Println("-------------experiment: capacity.go-------------")
-	fmt.Println("-------------------------------------------------")
-
-	var appendAndCount = func(r int, s []string) {
-		oldCap := cap(s)
-		for i := 0; i <= r; i++ {
-			s = append(s, fmt.Sprintf("%v", i))
-			newCap := cap(s)
-			if oldCap < newCap {
-				fmt.Printf("Slice has now a capacity of: %v (Capacity was: %v)\n", newCap, oldCap)
-				oldCap = newCap
+		for k, v := range buffer {
+			if v > 1 {
+				result[k] = v
 			}
 		}
+
+		return result
 	}
 
-	startingSlice := make([]string, 0, 10)
-
-	appendAndCount(400, startingSlice)
+	fmt.Println(countFrequency("As far as eye could reach he saw nothing but the stems of the great plants about him receding in the violet shade, and far overhead the multiple transparency of huge leaves filtering the sunshine to the solemn splendour of twilight in which he walked. Whenever he felt able he ran again; the ground continued soft and springy, covered with the same resilient weed which was the first thing his hands had touched in Malacandra. Once or twice a small red creature scuttled across his path, but otherwise there seemed to be no life stirring in the wood; nothing to fear—except the fact of wandering unprovisioned and alone in a forest of unknown vegetation thousands or millions of miles beyond the reach or knowledge of man."))
 
 }
