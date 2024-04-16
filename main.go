@@ -5,16 +5,27 @@ import (
 	"strings"
 )
 
-func hyperspace(worlds []string) {
-	for i := range worlds {
-		worlds[i] = strings.TrimSpace(worlds[i])
+type Planets []string
+
+func (p Planets) toStringWithSpace() string {
+	return strings.Join(p, "--<-->--")
+}
+
+func (p Planets) terraform() Planets {
+	var newPlanets Planets
+	for _, planet := range p {
+		newPlanets = append(newPlanets, "New "+planet)
 	}
+	return newPlanets
 }
 
 func main() {
-	fmt.Println("Hello World!")
-	worlds := []string{" Venus    ", " Earth    ", "    Mars    "}
-	fmt.Println(strings.Join(worlds, "--"))
-	hyperspace(worlds)
-	fmt.Println(strings.Join(worlds, "--"))
+
+	planets := Planets{
+		"Mercury", "Venus", "Earth", "Mars",
+		"Jupiter", "Saturn", "Uranus", "Neptune",
+	}
+
+	fmt.Println(planets.terraform().toStringWithSpace())
+
 }
