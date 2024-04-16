@@ -1,178 +1,112 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+	"math"
 )
+
+type coordinate struct {
+	d, m, s float64
+	h       rune
+}
 
 type location struct {
 	lat  float64
 	long float64
 }
 
-func exitOnError(err error) {
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func (c coordinate) decimal() float64 {
+	sign := 1.0
+	switch c.h {
+	case 'S', 'W', 's', 'w':
+		sign = -1
 	}
+	return sign * (c.d + c.m/60 + c.s/3600)
+}
+
+func newLocation(lat, long coordinate) location {
+	return location{lat.decimal(), long.decimal()}
+}
+
+type world struct {
+	radius float64
+}
+
+var mars = world{radius: 3389.5}
+
+// distance calculation using the Spherical Law of Cosines.
+func (w world) distance(p1, p2 location) float64 {
+	s1, c1 := math.Sincos(rad(p1.lat))
+	s2, c2 := math.Sincos(rad(p2.lat))
+	clong := math.Cos(rad(p1.long - p2.long))
+	return w.radius * math.Acos(s1*s2+c1*c2*clong)
+}
+
+// rad converts degrees to radians.
+func rad(deg float64) float64 {
+	return deg * math.Pi / 180
 }
 
 func main() {
 
 	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------Declaring a structure----------------------")
+	fmt.Println("------------Attaching methods to structs---------------")
 	fmt.Println("-------------------------------------------------------")
 
-	var curiosity struct {
-		lat  float64
-		long float64
+	// Bradbury Landing: 4°35'22.2" S, 137°26'30.1" E
+	lat := coordinate{4, 35, 22.2, 'S'}
+	long := coordinate{137, 26, 30.12, 'E'}
+
+	fmt.Println(lat.decimal(), long.decimal())
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("------------Constructor functions----------------------")
+	fmt.Println("-------------------------------------------------------")
+
+	fmt.Println(newLocation(lat, long))
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("------------The class alternative----------------------")
+	fmt.Println("-------------------------------------------------------")
+
+	lat2 := coordinate{102, 35, 22.2, 'N'}
+	long2 := coordinate{88, 26, 30.12, 'W'}
+
+	lat4 := coordinate{17, 35, 22.2, 'S'}
+	long4 := coordinate{8, 26, 30.12, 'E'}
+
+	myLocation2 := newLocation(lat2, long2)
+	myLocation4 := newLocation(lat4, long4)
+
+	fmt.Println(mars.distance(myLocation2, myLocation4))
+
+	fmt.Println("-------------------------------------------------------")
+	fmt.Println("------------experiment: landing.go---------------------")
+	fmt.Println("-------------------------------------------------------")
+
+	spirit := newLocation(coordinate{14, 34, 6.2, 'S'}, coordinate{175, 228, 21.5, 'E'})
+	opportunity := newLocation(coordinate{66, 34, 6.2, 'S'}, coordinate{59, 228, 21.5, 'E'})
+	curiosity := newLocation(coordinate{1, 34, 6.2, 'N'}, coordinate{16, 228, 21.5, 'W'})
+	insight := newLocation(coordinate{140, 34, 6.2, 'S'}, coordinate{120, 228, 21.5, 'W'})
+
+	fmt.Printf("%+0.2v\n%+0.2v\n%+0.2v\n%+0.2v\n", spirit, opportunity, curiosity, insight)
+
+	fmt.Printf("%v\n", mars.distance(spirit, opportunity))
+
+	a := []location{spirit, opportunity, curiosity, insight}
+
+	for i := range a {
+		for j := range a {
+			fmt.Println(mars.distance(a[i], a[j]))
+		}
 	}
 
-	curiosity.lat = -4.5895
-	curiosity.long = 137.4417
+	earth := world{radius: 6371.0}
 
-	fmt.Println(curiosity.lat, curiosity.long)
-	fmt.Println(curiosity)
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------Reusing structures with types--------------")
-	fmt.Println("-------------------------------------------------------")
-
-	type location struct {
-		lat  float64
-		long float64
+	for i := range a {
+		for j := range a {
+			fmt.Println(earth.distance(a[i], a[j]))
+		}
 	}
 
-	var spirit location
-	spirit.lat = -14.5684
-	spirit.long = 175.472636
-
-	var opportunity location
-	opportunity.lat = -1.9462
-	opportunity.long = 354.4734
-
-	fmt.Println(spirit, opportunity)
-	fmt.Printf("Type of spririt: %T\n", spirit)
-	fmt.Printf("Type of opportunity: %T\n", opportunity)
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("-----Initialize structures with composite literals-----")
-	fmt.Println("-------------------------------------------------------")
-
-	type location2 struct {
-		lat, long float64
-	}
-
-	opportunity2 := location{lat: -1.9462, long: 354.4734}
-	fmt.Println(opportunity2)
-
-	insight := location{lat: 4.5, long: 135.9}
-	fmt.Println(insight)
-
-	// It is also possible to omit the keys and only pass the values,
-	// use with caution tho, it can get pretty unreadable
-
-	newthing := location{-44.5544, 754.7574}
-	fmt.Println(newthing)
-
-	// %v format verb with + prints also the field names
-
-	fmt.Printf("%v\n", newthing)
-	fmt.Printf("%+v\n", newthing)
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------Structures are copied----------------------")
-	fmt.Println("-------------------------------------------------------")
-
-	bradbury := location{-4.5895, 137.4417}
-	curiosity2 := bradbury
-
-	myRover := bradbury
-
-	fmt.Printf("My Rover: %+v\n", myRover)
-
-	curiosity2.long += 0.0106
-
-	fmt.Println(bradbury, curiosity2)
-
-	// Structs passed into functions also get copied
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------A slice of structures----------------------")
-	fmt.Println("-------------------------------------------------------")
-
-	type location3 struct {
-		name string
-		lat  float64
-		long float64
-	}
-
-	locations3 := []location3{
-		{name: "Bradbury Landing", lat: -4.5895, long: 137.4417},
-		{name: "Columbia Memorial Station", lat: -14.5684, long: 175.472636},
-		{name: "Challenger Memorial Station", lat: -1.9462, long: 354.4734},
-	}
-
-	for i := range locations3 {
-		fmt.Printf("%+v\n", locations3[i])
-	}
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------Encoding structures to JSON----------------")
-	fmt.Println("-------------------------------------------------------")
-
-	// Keys need to be uppercase to be exported in Go,
-	// so that the JSON package can access them.
-	type location4 struct {
-		Lat  float64 `json:"labernicht"`
-		Long float64 `json:"dochisso"`
-	}
-
-	curiosity4 := location4{-4.5895, 137.4417}
-
-	bytes, err := json.Marshal(curiosity4)
-	exitOnError(err)
-
-	fmt.Println(string(bytes))
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("-----------Customizing JSON with struct tags-----------")
-	fmt.Println("-------------------------------------------------------")
-
-	type location5 struct {
-		// struct tags are strings appended to an entry containing key value pairs,
-		// that often correspond to a specific package
-
-		Lat  float64 `json:"latitude"`
-		Long float64 `json:"longitude"`
-	}
-
-	curiosity5 := location5{-4.5895, 137.4417}
-
-	bytes2, err2 := json.Marshal(curiosity5)
-	exitOnError(err2)
-
-	fmt.Println(string(bytes2))
-
-	fmt.Println("-------------------------------------------------------")
-	fmt.Println("------------experiment landing.go----------------------")
-	fmt.Println("-------------------------------------------------------")
-
-	type location10 struct {
-		Name string  `json:"name"`
-		Lat  float64 `json:"latitude"`
-		Long float64 `json:"longitude"`
-	}
-
-	locations10 := []location10{
-		{Name: "Bradbury Landing", Lat: -4.5895, Long: 137.4417},
-		{Name: "Columbia Memorial Station", Lat: -14.5684, Long: 175.472636},
-		{Name: "Challenger Memorial Station", Lat: -1.9462, Long: 354.4734},
-	}
-
-	bytes10, err10 := json.MarshalIndent(locations10, "", "")
-	exitOnError(err10)
-
-	fmt.Println(string(bytes10))
 }
