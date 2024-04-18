@@ -5,50 +5,57 @@ import (
 	"math"
 )
 
-// Bad idea, should use struct embedding
-// type report struct {
-// 	sol         int
-// 	temperature temperature
-// 	location    location
-// }
-
-// Actually a bad way, and it should be done with struct embedding
-// func (r report) average() celcius {
-// 	// Just refer the method of the child here, to gain access to it from parent.
-// 	// I like the idea.
-// 	return r.temperature.average()
-// }
-
-type report struct {
-	sol int
-	location
-	temperature
+type rover struct {
+	name string
+	gps
 }
 
-type temperature struct {
-	high, low celcius
+type gps struct {
+	currentLocation     location
+	destinationLocation location
+	world
 }
 
-// We can not declare two methods with the same name on different embedded structs, and refer to them from the base struct
-// That would lead to an ambiguous selector error, because the go compiler can not know where he needs to forward the call to.
-// Can be resolved by creating the same method on the top-level, or referencing it there, to always make clear, which method should be called
-func (t temperature) average() celcius {
-	return celcius((float64(t.high) - math.Abs(float64(t.low))) / 2)
+func (g gps) distance() float64 {
+	return g.world.distance(g.currentLocation, g.destinationLocation)
+}
+
+func (g gps) message() {
+	fmt.Printf("%v kilometers remaining to the destination: %v", g.distance(), g.destinationLocation.name)
 }
 
 type location struct {
+	name      string
 	lat, long float64
-	// Can not declare high or low as values, because it would create an ambiguous selector error
-	// That's because the Go compiler doesn't know which attribute, either location or temperature, he should forward to
 }
 
-type celcius float64
+func (l location) description() string {
+	return fmt.Sprintf("Location: %v: %v, %v", l.name, l.lat, l.long)
+}
+
+type world struct {
+	name   string
+	radius float64
+}
+
+// distance calculation using the Spherical Law of Cosines.
+func (w world) distance(p1, p2 location) float64 {
+	s1, c1 := math.Sincos(rad(p1.lat))
+	s2, c2 := math.Sincos(rad(p2.lat))
+	clong := math.Cos(rad(p1.long - p2.long))
+	return w.radius * math.Acos(s1*s2+c1*c2*clong)
+}
+
+// rad converts degrees to radians.
+func rad(deg float64) float64 {
+	return deg * math.Pi / 180
+}
 
 func main() {
-	bradburry := location{-4.5895, 137.4417}
-	t := temperature{high: -1.0, low: -7.0}
-	report := report{sol: 15, temperature: t, location: bradburry}
-	fmt.Printf("%+v\n", report)
-	fmt.Printf("a balmy %v° C\n", report.temperature.high)
-	fmt.Printf("average %v° C\n", report.average())
+	bradburryLanding := location{lat: -4.5895, long: 137.4417}
+	elysiumPlanitia := location{lat: 4.5, long: 135.9}
+	mars := world{name: "Mars", radius: 3389.5}
+	gps := gps{currentLocation: bradburryLanding, destinationLocation: elysiumPlanitia, world: mars}
+	curiosity := rover{name: "Curiosity", gps: gps}
+	curiosity.message()
 }
