@@ -1,56 +1,30 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-	"time"
-)
+import "fmt"
 
-type rover struct {
+type location struct {
+	lat, long coordinate
 }
 
-func (r rover) talk() string {
-	return "vroom vroom"
+// This satisfies the Stringer interface of the fmt package,
+// Therefore friends like Println and Sprintf can use it directly.
+func (l location) String() string {
+	return fmt.Sprintf("%s\n%s", l.lat.String(), l.long.String())
 }
 
-type talker interface {
-	talk() string
+type coordinate struct {
+	d, m, s float64
+	h       rune
 }
 
-func shout(t talker) {
-	louder := strings.ToUpper(t.talk())
-	fmt.Println(louder)
-}
-
-type stardater interface {
-	YearDay() int
-	Hour() int
-}
-
-func stardate(t stardater) float64 {
-	doy := float64(t.YearDay())
-	h := float64(t.Hour()) / 24.0
-	return 1000 + doy + h
-}
-
-type sol int
-
-func (s sol) YearDay() int {
-	return int(s % 668)
-}
-
-func (s sol) Hour() int {
-	return 0
+func (c coordinate) String() string {
+	// %v prints the variable and %c prints the character
+	return fmt.Sprintf("%v°%v'%v''%c", c.d, c.m, c.s, c.h)
 }
 
 func main() {
-	r := rover{}
-	shout(r)
-
-	day := time.Date(2012, 8, 6, 5, 17, 0, 0, time.UTC)
-	fmt.Printf("%.1f Curiosity has landed\n", stardate(day))
-
-	s := sol(1422)
-	fmt.Printf("%.1f Happy birthday\n", stardate(s))
-
+	cologneLatitude := coordinate{50, 56, 6.6228, 'N'}
+	cologneLongitude := coordinate{6, 57, 11.1636, 'E'}
+	cologne := location{cologneLatitude, cologneLongitude}
+	fmt.Println(cologne)
 }
