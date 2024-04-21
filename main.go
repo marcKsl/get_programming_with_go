@@ -1,30 +1,42 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// maps are pointers
-// dont do this:
-// func demolish(planets *map[string]string)
+type talker interface {
+	talk() string
+}
 
-// slices are also pointers to arrays
-// slices almost never need to be adressed as a pointer
-// unless you want to mutate the length, the pointer itself or the capacity
-// here we change the length of a slice by adressing it directly through its pointer
-func reclassify(planets *[]string) {
-	*planets = (*planets)[0:8]
+func shout(t talker) {
+	louder := strings.ToUpper(t.talk())
+	fmt.Println(louder)
+}
+
+type martian struct{}
+
+func (m martian) talk() string {
+	return "yip yip"
+}
+
+type laser struct{}
+
+func (l *laser) talk() string {
+	return "pew pew"
 }
 
 func main() {
-	planets := []string{
-		"Mercury", "Venus", "Earth", "Mars",
-		"Jupiter", "Saturn", "Uranus", "Neptune",
-		"Pluto",
-	}
-	fmt.Println(planets)
-	// poor pluto..
-	reclassify(&planets)
-	fmt.Println(planets)
+	m := martian{}
+	shout(m)
+	shout(&m)
 
-	// So the lesson is: We do not need pointers to modify the data that maps and slices hold
-	// But we do need pointers to modify the data that sits inside of structures and arrays
+	l := laser{}
+	// this does not work,
+	// because the receiver of the talk() method on laser is of type pointer
+	// laser...pointer, badumm
+	// shout(l)
+
+	// This works fine, because it satisfies the receiver type
+	shout(&l)
 }
