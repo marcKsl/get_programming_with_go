@@ -2,86 +2,138 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
-type stats struct {
-	level             int
-	endurance, health int
+// Conways game of life with arrays, no slices
+
+// Game rules:
+// cells have eight adjacent neighbours
+// Switch:
+// < 2 neighbours -> dies
+// > 3 neighbours -> dies
+// == 3 neighbours && dead -> lives
+// starts off with a random board and a fixed size
+// cells can be dead or alive
+// game ends if all cells live or all cells died
+
+type cells [][]bool
+
+func (c *cells) getLivingNeighbors(x, y int) int {
+	count := 0
+	height := len(*c)
+	width := len((*c)[0])
+
+	for dx := -1; dx <= 1; dx++ {
+		for dy := -1; dy <= 1; dy++ {
+			if dx == x && dy == y {
+				continue
+			}
+
+			nx := (x + dx + height) % height
+			ny := (y + dy + width) % width
+
+			if (*c)[nx][ny] {
+				count++
+			}
+
+		}
+	}
+
+	return count
 }
 
-func levelUp(s *stats) {
-	s.level++
-	s.endurance = 42 + (14 + s.level)
-	s.health = 5 * s.endurance
+func (c *cells) makeDestiny(x, y int) {
+	count := c.getLivingNeighbors(x, y)
+	switch {
+	case count < 2:
+		(*c)[x][y] = false
+	case count > 3:
+		(*c)[x][y] = false
+	case count == 3 && (*c)[x][y]:
+		(*c)[x][y] = true
+	default:
+		(*c)[x][y] = true
+	}
 }
 
-type character struct {
-	name  string
-	stats stats
+func initialize(width, height int) cells {
+	grid := make([][]bool, height)
+	for i := range grid {
+		grid[i] = make([]bool, width)
+	}
+
+	for i := range grid {
+		for j := range grid[i] {
+			grid[i][j] = rand.Intn(2) == 1
+		}
+	}
+
+	return grid
 }
 
-type person struct {
-	name, superpower string
-	age              int
+func (c cells) Print() {
+	for i := range c {
+		for j := range c[i] {
+			if c[i][j] {
+				fmt.Printf("*")
+			} else {
+				fmt.Printf(" ")
+			}
+		}
+		fmt.Println()
+	}
 }
 
-func (p *person) birthday() {
-	p.age++
+func (c1 *cells) Next(c2 *cells) {
+	for i := range *c1 {
+		for j := range (*c1)[i] {
+			(*c2).makeDestiny(i, j)
+		}
+	}
+	*c1 = *c2
 }
 
-func birthday(p *person) {
-	p.age++
-}
-
-func (p person) fakeBirthday() {
-	p.age++
+func (c *cells) endGame() bool {
+	allAlive := true
+	allDead := true
+	for i := range *c {
+		for j := range (*c)[i] {
+			if (*c)[i][j] {
+				allDead = false
+			} else {
+				allAlive = false
+			}
+			if !allDead && !allAlive {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func main() {
-	rebecca := person{
-		name:       "Rebecca",
-		superpower: "imagination",
-		age:        14,
+
+	const (
+		height = 10
+		width  = 40
+	)
+
+	fmt.Println("\033[H")
+	c1 := initialize(width, height)
+	c2 := initialize(width, height)
+	time.Sleep(time.Millisecond * 1000)
+	fmt.Println("\033[H")
+
+	for {
+		c1.Next(&c2)
+		c1.Print()
+		time.Sleep(time.Millisecond * 1000)
+		fmt.Println("\033[H")
+		if c1.endGame() {
+			break
+		}
 	}
-
-	birthday(&rebecca)
-
-	fmt.Printf("%+v\n", rebecca)
-
-	// Same for methods
-	nathan := &person{
-		name: "Nathan",
-		age:  17,
-	}
-
-	nathan.birthday()
-	fmt.Printf("%+v\n", *nathan)
-
-	// Even this works, because methods will automatically dereference the adress for the pointer receiver
-	terry := person{
-		name: "Terry",
-		age:  15,
-	}
-	// We can just call birthday
-	terry.birthday()
-	fmt.Printf("%+v\n", terry)
-
-	// But it is important that, the receiver of the birthday() method needs to be a pointer,
-	// otherwise age really would not increment, because it would operate on a copy
-	terry.fakeBirthday()
-	fmt.Printf("%+v\n", terry)
-
-	// interior pointers point to inner items of structs
-	player := character{name: "Matthias"}
-	levelUp(&player.stats)
-	fmt.Printf("player is: %+v\n", player)
-	playerStatAdress := &player.stats
-	levelUp(playerStatAdress)
-	playerStatAdressValue := *playerStatAdress
-	fmt.Printf("player.stats after one more birthday is: %+v\n", player.stats)
-	fmt.Printf("playerStatAdressValue is: %+v\n", playerStatAdressValue)
-	levelUp(&player.stats)
-	fmt.Printf("playerStatAdressValue after one original player levelup is: %+v\n", playerStatAdressValue)
-	fmt.Printf("player after two original player levelup is: %+v\n", player.stats)
 
 }
