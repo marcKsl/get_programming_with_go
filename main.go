@@ -1,43 +1,80 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+)
 
-type item string
-
-type character struct {
-	name     string
-	leftHand *item
+type safeWriter struct {
+	// We can pass any type to w that implements the io.Writer interface
+	// For example os.File does implement the io.Writer interface, because
+	// it contains a method Write(b []byte) n int, err error, which implicitly
+	// implements the io.Writer interface
+	w   io.Writer
+	err error
 }
 
-func (c *character) pickup(i *item) {
-	if i == nil {
+// We use a pointertype here because we want to actually modify
+// the value of the given safeWriter.err value
+func (sw *safeWriter) writeln(s string) {
+	if sw.err != nil {
 		return
 	}
-	c.leftHand = i
-	fmt.Printf("%v hat %v aufgehoben.\n", c.name, *i)
+	_, sw.err = fmt.Fprintln(sw.w, s)
 }
 
-func (c *character) give(to *character) {
-	if to == nil {
-		return
+func proverbs(name string) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
 	}
-	if c.leftHand == nil {
-		return
-	}
-	to.leftHand = c.leftHand
-	c.leftHand = nil
-	fmt.Printf("%v hat %v ein %v gegeben.", c.name, to.name, *to.leftHand)
+	defer f.Close()
+
+	sw := safeWriter{w: f}
+	sw.writeln("Errors are values.")
+	sw.writeln("Don't just check errors, handle them gracefully.")
+	sw.writeln("Don't panic.")
+	sw.writeln("Make the zero value useful.")
+	sw.writeln("The bigger the interface, the weaker the abstraction.")
+	sw.writeln("interface{} says nothing.")
+	sw.writeln("Gofmt's style is no one's favorite, yet gofmt is everyone'sfavorite.")
+	sw.writeln("Documentation is for users.")
+	sw.writeln("A little copying is better than a little dependency.")
+	sw.writeln("Clear is better than clever.")
+	sw.writeln("Concurrency is not parallelism.")
+	sw.writeln("Don't communicate by sharing memory, share memory bycommunicating.")
+	sw.writeln("Channels orchestrate; mutexes serialize.")
+
+	return sw.err
 }
 
 func main() {
-	sword := item("Schwert")
-	arthur := character{name: "Arthur"}
-	arthur.pickup(&sword)
-	arthur.pickup(nil)
-	fmt.Println(arthur)
-	knight := character{name: "Knight"}
-	fmt.Println(knight)
-	arthur.give(&knight)
-	fmt.Println(arthur)
-	fmt.Println(knight)
+
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	for _, file := range files {
+		fmt.Println(file.Name())
+	}
+
+	err = proverbs("proverbs.txt")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	files, err = ioutil.ReadDir(".")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	for _, file := range files {
+		fmt.Println(file.Name())
+	}
 }
