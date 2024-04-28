@@ -1,16 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func removeIdentical(upstream, downstream chan string) {
-	buf := ""
 	for u := range upstream {
-		if buf != u {
-			buf = u
-			downstream <- u
+		for _, s := range strings.Fields(u) {
+			downstream <- s
 		}
 	}
-	close(downstream)
 }
 
 func main() {
