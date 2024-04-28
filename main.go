@@ -1,149 +1,93 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
+	"math/rand"
 	"strings"
+	"time"
 )
 
-type sudokuField struct {
-	grid        [9][9]int8
-	initialGrid [9][9]int8
-}
-
-func (sf sudokuField) String() string {
-	var s string
-	for i := range sf.grid {
-		for j := range sf.grid[i] {
-			s += strconv.Itoa(int(sf.grid[i][j]))
-			s += "  "
-		}
-		s += "\n"
-	}
-	return s
-}
-
-var (
-	ErrDigitAlreadyInUse   = errors.New("Digit already in subregion, line or column.")
-	ErrOutOfBounds         = errors.New("Coordinates out of bounds.")
-	ErrInvalidDigit        = errors.New("Digit must be between 0-9")
-	ErrForbiddenCoordinate = errors.New("Can not overwrite an initial non zero value")
+const (
+	gopherAmount = 29
+	endurance    = 6
 )
 
-type SudokuError []error
-
-func (se SudokuError) Error() string {
-	if se == nil {
-		return ""
-	}
-	var s []string
-	for _, err := range se {
-		if err != nil && err.Error() != "" {
-			s = append(s, err.Error())
-		}
-	}
-	return strings.Join(s, "\n")
+func sleepyGopher(t time.Duration, c chan int, id int) {
+	time.Sleep(time.Second * t)
+	fmt.Printf("Gopher %v: ...snore...\n", id)
+	c <- id
 }
 
-func newGrid(g [9][9]int8) sudokuField {
-	sf := sudokuField{grid: g, initialGrid: g}
-	return sf
+func sourceGopher(downstream chan string) {
+	for _, v := range []string{"hello world", "a bad apple", "goodbye all"} {
+		downstream <- v
+	}
+	close(downstream)
 }
 
-func (sf sudokuField) isValidCoordinate(x, y int8) error {
-	var err SudokuError
-	if x > 9 || x < 0 {
-		err = append(err, ErrOutOfBounds)
-	}
-	if y > 9 || y < 0 {
-		err = append(err, ErrOutOfBounds)
-	}
-	if err == nil {
-		if sf.initialGrid[x][y] != 0 {
-			err = append(err, ErrForbiddenCoordinate)
+func filterGopher(upstream, downstream chan string) {
+	for item := range upstream {
+		if !strings.Contains(item, "bad") {
+			downstream <- item
 		}
 	}
-	return err
+	close(downstream)
+	// This will read the empty value for the type of channel
+	// In this case it will read ""
+	v, err := (<-downstream)
+	if err == true {
+		return
+	}
+	fmt.Println(v)
+	fmt.Println(<-downstream)
 }
 
-func isValidValue(v int8) error {
-	if v <= 0 || v >= 9 {
-		return ErrInvalidDigit
+func printGopher(upstream chan string) {
+	for item := range upstream {
+		fmt.Println(item)
 	}
-	return nil
-}
-
-func (sf *sudokuField) setDigit(x, y, v int8) error {
-	var err SudokuError
-	if errCoord := sf.isValidCoordinate(x, y); errCoord != nil {
-		err = append(err, errCoord)
-	}
-	if errValue := isValidValue(v); errValue != nil {
-		err = append(err, errValue)
-	}
-	if err != nil {
-		return err
-	}
-	for i := range sf.grid {
-		if sf.grid[i][y] == v {
-			err = append(err, ErrDigitAlreadyInUse)
-		}
-	}
-	for i := range sf.grid[x] {
-		if sf.grid[x][i] == v {
-			err = append(err, ErrDigitAlreadyInUse)
-		}
-	}
-	x0 := (x / 3) * 3
-	y0 := (y / 3) * 3
-	if err == nil {
-		for i := x0; i < x0+3; i++ {
-			for j := y0; j < y0+3; j++ {
-				if sf.grid[i][j] == v {
-					err = append(err, ErrDigitAlreadyInUse)
-				}
-			}
-		}
-	}
-	if err == nil {
-		sf.grid[x][y] = v
-	}
-	return err
-}
-
-func (g *sudokuField) clearDigit(x, y int8) error {
-	err := g.isValidCoordinate(x, y)
-	if err != nil {
-		return err
-	}
-	g.grid[x][y] = 0
-	return nil
 }
 
 func main() {
-	var err SudokuError
-	sf := newGrid([9][9]int8{
-		{5, 3, 0, 0, 7, 0, 0, 0, 0},
-		{6, 0, 0, 1, 9, 5, 0, 0, 0},
-		{0, 9, 8, 0, 0, 0, 0, 6, 0},
-		{8, 0, 0, 0, 6, 0, 0, 0, 3},
-		{4, 0, 0, 8, 0, 3, 0, 0, 1},
-		{7, 0, 0, 0, 2, 0, 0, 0, 6},
-		{0, 6, 0, 0, 0, 0, 2, 8, 0},
-		{0, 0, 0, 4, 1, 9, 0, 0, 5},
-		{0, 0, 0, 0, 8, 0, 0, 7, 9},
-	})
-	fmt.Println(sf)
-	if err := append(err, sf.setDigit(0, 2, 3)); err != nil {
-		fmt.Printf("%#v", err)
+	c := make(chan int)
+	d := make(chan string)
+	counter := 0
+	go func() {
+		time.Sleep(time.Second * 2)
+		d <- "hello world"
+	}()
+	go func() {
+		s := <-d
+		fmt.Println(s)
+	}()
+	for i := 0; i < gopherAmount; i++ {
+		go sleepyGopher(time.Duration(rand.Intn(endurance)), c, i)
 	}
-	// for i := range sf.grid {
-	// 	for j := range sf.grid[int8(i)] {
-	// 		err = append(err, sf.setDigit(int8(i), int8(j), 9))
-	// 	}
-	// }
-	// fmt.Println(sf)
-	// fmt.Println("Errors:", err)
-	// fmt.Println(sf)
+	timeout := time.After(time.Second * (endurance - 1))
+loop:
+	for i := 0; i < gopherAmount; i++ {
+		select {
+		case <-timeout:
+			fmt.Println("It's over!!!")
+			fmt.Printf("%v/%v gophers made it.\n", counter, gopherAmount)
+			// Escape the for loop here
+			break loop
+		case gopherID := <-c:
+			fmt.Println("gopher", gopherID, " has finished sleeping")
+			counter++
+			fmt.Printf("%v/%v gophers are awake now.\n", counter, gopherAmount)
+		}
+	}
+	time.Sleep(time.Millisecond * 500)
+	fmt.Println("Now the pipeline.")
+	time.Sleep(time.Millisecond * 300)
+	fmt.Println("------------------------------------")
+	time.Sleep(time.Millisecond * 700)
+	c0 := make(chan string)
+	c1 := make(chan string)
+	go sourceGopher(c0)
+	go filterGopher(c0, c1)
+	printGopher(c1)
+	time.Sleep(time.Second * 7)
+	fmt.Println("The end.")
 }
