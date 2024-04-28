@@ -1,31 +1,24 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
+
+const adr = "https://g oogle.com"
 
 func main() {
-
-	// This is an anonymous function that will be executed when the function,
-	// it sits in returns. Deffered functions will even be executed if the program
-	// had a panic.
-	// Note: recover() only make sense in deffered functions.
-	defer func() {
-		e := recover()
-		if e != nil {
-			fmt.Printf("The following error ocurred: %v", e)
+	fmt.Println("Input adress:", adr)
+	result, e := url.Parse(adr)
+	if e != nil {
+		if urlErr, ok := e.(*url.Error); ok {
+			fmt.Println("URL that caused the error:", urlErr.URL)
+			fmt.Println("Error Op:", urlErr.Op)
+			fmt.Println("Underlying error:", urlErr.Err)
 		}
-	}()
-
-	fmt.Println("Hello World!")
-	// This will give zero the empty type of int, which is indeed 0
-	var zero int
-	// This will result in a panic
-	_ = 42 / zero
-	// This won't be executed, because the program had a panic already,
-	// and only deferred functions will be executed after a panic.
-	a := recover()
-	if a != nil {
-		fmt.Println(a)
+		fmt.Println(e)
+		fmt.Printf("An error ocurred: %#v", e)
+	} else {
+		fmt.Println("Result:", result)
 	}
-	// This would force a panic, but won't be executed aswell
-	panic("PANEK")
 }
